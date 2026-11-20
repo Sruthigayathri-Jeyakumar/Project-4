@@ -1,13 +1,17 @@
-name: Terraform Plan
+name: Terraform CI/CD
 
 on:
+  pull_request:
+    branches:
+      - main
+
   push:
     branches:
       - main
-      - feature/**
 
 jobs:
-  terraform:
+  plan:
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
 
     steps:
@@ -21,10 +25,27 @@ jobs:
         run: terraform init
 
       - name: Terraform Validate
-        run: terraform validate | tee validation.txt
+        run: terraform validate
 
-      - name: Upload Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: terraform-validation
-          path: validation.txt
+      - name: Terraform Plan
+        run: terraform plan
+
+  apply:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+
+    environment:
+      name: production
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform Apply
+        run: terraform apply -auto-approve
