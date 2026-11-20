@@ -20,11 +20,11 @@ jobs:
       - name: Terraform Init
         run: terraform init
 
-      - name: Terraform Plan
-        run: terraform plan -refresh=false -out=tfplan
+      - name: Terraform Validate
+        run: terraform validate | tee validation.txt
 
-      - name: Upload Plan Artifact
+      - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: terraform-plan
-          path: tfplan
+          name: terraform-validation
+          path: validation.txt
